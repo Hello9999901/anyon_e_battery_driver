@@ -25,17 +25,12 @@
 #include <asm/uaccess.h>
 
 static int
-fake_battery_get_property1(struct power_supply *psy,
+anyon_e_battery_get_property1(struct power_supply *psy,
         enum power_supply_property psp,
         union power_supply_propval *val);
 
 static int
-fake_battery_get_property2(struct power_supply *psy,
-        enum power_supply_property psp,
-        union power_supply_propval *val);
-
-static int
-fake_ac_get_property(struct power_supply *psy,
+anyon_e_ac_get_property(struct power_supply *psy,
         enum power_supply_property psp,
         union power_supply_propval *val);
 
@@ -44,7 +39,7 @@ static struct battery_status {
     int capacity_level;
     int capacity;
     int time_left;
-} fake_battery_statuses[2] = {
+} anyon_e_battery_statuses[2] = {
     {
         .status = POWER_SUPPLY_STATUS_FULL,
         .capacity_level = POWER_SUPPLY_CAPACITY_LEVEL_FULL,
@@ -61,12 +56,11 @@ static struct battery_status {
 
 static int ac_status = 1;
 
-static char *fake_ac_supplies[] = {
+static char *anyon_e_ac_supplies[] = {
     "BAT0",
-    "BAT1",
 };
 
-static enum power_supply_property fake_battery_properties[] = {
+static enum power_supply_property anyon_e_battery_properties[] = {
     POWER_SUPPLY_PROP_STATUS,
     POWER_SUPPLY_PROP_CHARGE_TYPE,
     POWER_SUPPLY_PROP_HEALTH,
@@ -86,7 +80,7 @@ static enum power_supply_property fake_battery_properties[] = {
     POWER_SUPPLY_PROP_VOLTAGE_NOW,
 };
 
-static enum power_supply_property fake_ac_properties[] = {
+static enum power_supply_property anyon_e_ac_properties[] = {
     POWER_SUPPLY_PROP_ONLINE,
 };
 
@@ -94,25 +88,17 @@ static struct power_supply_desc descriptions[] = {
     {
         .name = "BAT0",
         .type = POWER_SUPPLY_TYPE_BATTERY,
-        .properties = fake_battery_properties,
-        .num_properties = ARRAY_SIZE(fake_battery_properties),
-        .get_property = fake_battery_get_property1,
-    },
-
-    {
-        .name = "BAT1",
-        .type = POWER_SUPPLY_TYPE_BATTERY,
-        .properties = fake_battery_properties,
-        .num_properties = ARRAY_SIZE(fake_battery_properties),
-        .get_property = fake_battery_get_property2,
+        .properties = anyon_e_battery_properties,
+        .num_properties = ARRAY_SIZE(anyon_e_battery_properties),
+        .get_property = anyon_e_battery_get_property1,
     },
 
     {
         .name = "AC0",
         .type = POWER_SUPPLY_TYPE_MAINS,
-        .properties = fake_ac_properties,
-        .num_properties = ARRAY_SIZE(fake_ac_properties),
-        .get_property = fake_ac_get_property,
+        .properties = anyon_e_ac_properties,
+        .num_properties = ARRAY_SIZE(anyon_e_ac_properties),
+        .get_property = anyon_e_ac_get_property,
     },
 };
 
@@ -120,8 +106,8 @@ static struct power_supply_config configs[] = {
     { },
     { },
     {
-        .supplied_to = fake_ac_supplies,
-        .num_supplicants = ARRAY_SIZE(fake_ac_supplies),
+        .supplied_to = anyon_e_ac_supplies,
+        .num_supplicants = ARRAY_SIZE(anyon_e_ac_supplies),
     },
 };
 
@@ -130,7 +116,7 @@ static struct power_supply *supplies[sizeof(descriptions) / sizeof(descriptions[
 static ssize_t
 control_device_read(struct file *file, char *buffer, size_t count, loff_t *ppos)
 {
-    static char *message = "fake battery information!";
+    static char *message = "anyon_e battery information!";
     size_t message_len = strlen(message);
 
     if(count < message_len) {
@@ -228,12 +214,12 @@ control_device_write(struct file *file, const char *buffer, size_t count, loff_t
     int status;
 
     if(*ppos != 0) {
-        printk(KERN_ERR "writes to /dev/fake_battery must be completed in a single system call\n");
+        printk(KERN_ERR "writes to /dev/anyon_e_battery must be completed in a single system call\n");
         return -EINVAL;
     }
 
     if(count > 1024) {
-        printk(KERN_ERR "Too much data provided to /dev/fake_battery (limit 1024 bytes)\n");
+        printk(KERN_ERR "Too much data provided to /dev/anyon_e_battery (limit 1024 bytes)\n");
         return -EINVAL;
     }
 
@@ -249,7 +235,7 @@ control_device_write(struct file *file, const char *buffer, size_t count, loff_t
     while((newline = memchr(buffer_cursor, '\n', bytes_left))) {
         *newline = '\0';
         /* XXX this is non-atomic */
-        status = handle_control_line(buffer_cursor, &ac_status, fake_battery_statuses);
+        status = handle_control_line(buffer_cursor, &ac_status, anyon_e_battery_statuses);
 
         if(status) {
             return status;
@@ -259,12 +245,9 @@ control_device_write(struct file *file, const char *buffer, size_t count, loff_t
         buffer_cursor  = newline + 1;
     }
 
-    handle_charge_changes(ac_status, &fake_battery_statuses[0]);
-    handle_charge_changes(ac_status, &fake_battery_statuses[1]);
+    handle_charge_changes(ac_status, &anyon_e_battery_statuses[0]);
 
     power_supply_changed(supplies[0]);
-    power_supply_changed(supplies[1]);
-    power_supply_changed(supplies[2]);
 
     return count;
 }
@@ -277,12 +260,12 @@ static struct file_operations control_device_ops = {
 
 static struct miscdevice control_device = {
     MISC_DYNAMIC_MINOR,
-    "fake_battery",
+    "anyon_e_battery",
     &control_device_ops,
 };
 
 static int
-fake_battery_generic_get_property(struct power_supply *psy,
+anyon_e_battery_generic_get_property(struct power_supply *psy,
         enum power_supply_property psp,
         union power_supply_propval *val,
         struct battery_status *status)
@@ -336,43 +319,25 @@ fake_battery_generic_get_property(struct power_supply *psy,
 };
 
 static int
-fake_battery_get_property1(struct power_supply *psy,
+anyon_e_battery_get_property1(struct power_supply *psy,
         enum power_supply_property psp,
         union power_supply_propval *val)
 {
     switch (psp) {
         case POWER_SUPPLY_PROP_MODEL_NAME:
-            val->strval = "Fake battery 1";
+            val->strval = "anyon_e battery 1";
             break;
         case POWER_SUPPLY_PROP_SERIAL_NUMBER:
             val->strval = "12345678";
             break;
         default:
-            return fake_battery_generic_get_property(psy, psp, val, &fake_battery_statuses[0]);
+            return anyon_e_battery_generic_get_property(psy, psp, val, &anyon_e_battery_statuses[0]);
     }
     return 0;
 }
 
 static int
-fake_battery_get_property2(struct power_supply *psy,
-        enum power_supply_property psp,
-        union power_supply_propval *val)
-{
-    switch (psp) {
-        case POWER_SUPPLY_PROP_MODEL_NAME:
-            val->strval = "Fake battery 2";
-            break;
-        case POWER_SUPPLY_PROP_SERIAL_NUMBER:
-            val->strval = "12345678";
-            break;
-        default:
-            return fake_battery_generic_get_property(psy, psp, val, &fake_battery_statuses[1]);
-    }
-    return 0;
-}
-
-static int
-fake_ac_get_property(struct power_supply *psy,
+anyon_e_ac_get_property(struct power_supply *psy,
         enum power_supply_property psp,
         union power_supply_propval *val)
 {
@@ -387,7 +352,7 @@ fake_ac_get_property(struct power_supply *psy,
 }
 
 static int __init
-fake_battery_init(void)
+anyon_e_battery_init(void)
 {
     int result;
     int i;
@@ -401,12 +366,12 @@ fake_battery_init(void)
     for(i = 0; i < ARRAY_SIZE(descriptions); i++) {
         supplies[i] = power_supply_register(NULL, &descriptions[i], &configs[i]);
         if(IS_ERR(supplies[i])) {
-            printk(KERN_ERR "Unable to register power supply %d in fake_battery\n", i);
+            printk(KERN_ERR "Unable to register power supply %d in anyon_e_battery\n", i);
             goto error;
         }
     }
 
-    printk(KERN_INFO "loaded fake_battery module\n");
+    printk(KERN_INFO "loaded anyon_e_battery module\n");
     return 0;
 
 error:
@@ -418,7 +383,7 @@ error:
 }
 
 static void __exit
-fake_battery_exit(void)
+anyon_e_battery_exit(void)
 {
     int i;
 
@@ -428,10 +393,10 @@ fake_battery_exit(void)
         power_supply_unregister(supplies[i]);
     }
 
-    printk(KERN_INFO "unloaded fake_battery module\n");
+    printk(KERN_INFO "unloaded anyon_e_battery module\n");
 }
 
-module_init(fake_battery_init);
-module_exit(fake_battery_exit);
+module_init(anyon_e_battery_init);
+module_exit(anyon_e_battery_exit);
 
 MODULE_LICENSE("GPL");
