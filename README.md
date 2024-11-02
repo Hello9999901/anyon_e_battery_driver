@@ -1,15 +1,4 @@
-# Fake Battery Module for the Linux kernel
-
-This is a kernel module I wrote (based mainly on the `test_power` module
-included in the Linux kernel source) for simulating multiple batteries on
-Linux.
-
-This is my first module, so don't hold me responsible if you use it and it
-causes a kernel panic. =)
-
-This is something I wrote a while ago and am not actively maintaining, so
-don't be surprised if it doesn't compile against newer kernels or otherwise
-does not work!
+# Modified from @hoelzro
 
 ## Loading the module
 
