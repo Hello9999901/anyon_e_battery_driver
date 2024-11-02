@@ -39,13 +39,7 @@ static struct battery_status {
     int capacity_level;
     int capacity;
     int time_left;
-} anyon_e_battery_statuses[2] = {
-    {
-        .status = POWER_SUPPLY_STATUS_FULL,
-        .capacity_level = POWER_SUPPLY_CAPACITY_LEVEL_FULL,
-        .capacity = 100,
-        .time_left = 3600,
-    },
+} anyon_e_battery_statuses[1] = {
     {
         .status = POWER_SUPPLY_STATUS_FULL,
         .capacity_level = POWER_SUPPLY_CAPACITY_LEVEL_FULL,
@@ -328,7 +322,7 @@ anyon_e_battery_get_property1(struct power_supply *psy,
             val->strval = "anyon_e battery 1";
             break;
         case POWER_SUPPLY_PROP_SERIAL_NUMBER:
-            val->strval = "12345678";
+            val->strval = "00000001";
             break;
         default:
             return anyon_e_battery_generic_get_property(psy, psp, val, &anyon_e_battery_statuses[0]);
